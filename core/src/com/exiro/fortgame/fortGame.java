@@ -1,33 +1,51 @@
 package com.exiro.fortgame;
 
-import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.Game;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.exiro.fortgame.renderer.LoadingScreen;
 
-public class fortGame extends ApplicationAdapter {
-	SpriteBatch batch;
-	Texture img;
-	
+public class fortGame extends Game {
+	public static final int VIRTUAL_WIDTH = 1920;
+	public static final int VIRTUAL_HEIGHT = 1080;
+	public static final float VIRTUAL_ASPECT_RATIO = VIRTUAL_WIDTH / VIRTUAL_HEIGHT;
+	public SpriteBatch batch;
+	public BitmapFont font;
+	public AssetManager assetManager;
+
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
-		img = new Texture("badlogic.jpg");
+		font = new BitmapFont();
+		this.assetManager = new AssetManager();
+		queueAssets(this.assetManager);
+		this.setScreen(new LoadingScreen(this));
+	}
+
+	/**
+	 * enqueue all assets
+	 *
+	 * @param assetManager assetsManager global Instance
+	 */
+	public void queueAssets(AssetManager assetManager) {
+		assetManager.load("mediumCanonCase.png", Texture.class);
+	}
+
+
+	public void mainProcess() {
+
 	}
 
 	@Override
-	public void render () {
-		Gdx.gl.glClearColor(1, 0, 0, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		batch.begin();
-		batch.draw(img, 0, 0);
-		batch.end();
+	public void render() {
+		super.render();
+		mainProcess();
 	}
 	
 	@Override
 	public void dispose () {
 		batch.dispose();
-		img.dispose();
 	}
 }

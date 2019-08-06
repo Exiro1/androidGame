@@ -254,4 +254,8 @@ public abstract class Parts {
     public void setPoison(Poison poison) {
         this.poison = poison;
     }
+
+    public Base getBase() {
+        return base;
+    }
 }
