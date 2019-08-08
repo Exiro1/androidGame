@@ -6,6 +6,7 @@ public class Base {
 
     private int ammoBaseSupply, energyBaseSupply, ammoCurrentSupply, energyCurrentSupply;
     private List<Case> Cases; //case used
+    private double life;
 
 
     public int getAmmoCurrentSupply() {

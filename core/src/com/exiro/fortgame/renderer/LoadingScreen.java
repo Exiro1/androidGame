@@ -44,6 +44,7 @@ public class LoadingScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         if (game.assetManager.update()) {
+            System.out.println(fortGame.TAG + " loaded : " + game.assetManager.getLoadedAssets());
             this.dispose();
             game.setScreen(new MenuScreen(game));
         }

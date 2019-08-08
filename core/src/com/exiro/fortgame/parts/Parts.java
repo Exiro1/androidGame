@@ -12,7 +12,7 @@ import com.exiro.fortgame.utils.Worker;
 
 import java.util.List;
 
-public abstract class Parts {
+public abstract class Parts<T extends Parts<T>> {
 
     private final int DESTROY_LIFE_FACTOR = 2;
     private final int REPAIR_LIFE_FACTOR = 3;
@@ -33,13 +33,12 @@ public abstract class Parts {
     private Fire fire;
     private Poison poison;
 
-    public Parts(Sprite defaultSprite, Sprite actionSprite, Sprite damagedSprite, Sprite damagedActionSprite, PartType type, float life, int ammoCost, int energyCost, int maxPeople, int level, int xlength, int ylength, int x, int y, int currentAmmoModifier, int currentEnergyModifier, Parts upperPart, Parts exposedSidePart, PartInteractionState interactionState, Base base, List<Worker> workers) {
+    public Parts(Sprite defaultSprite, Sprite actionSprite, Sprite damagedSprite, Sprite damagedActionSprite, PartType type, int ammoCost, int energyCost, int maxPeople, int level, int xlength, int ylength, int x, int y, int currentAmmoModifier, int currentEnergyModifier, Parts upperPart, Parts exposedSidePart, PartInteractionState interactionState, Base base, List<Worker> workers) {
         this.defaultSprite = defaultSprite;
         this.actionSprite = actionSprite;
         this.damagedSprite = damagedSprite;
         this.damagedActionSprite = damagedActionSprite;
         this.type = type;
-        this.maxLife = life;
         this.ammoCost = ammoCost;
         this.energyCost = energyCost;
         this.maxPeople = maxPeople;
@@ -56,12 +55,14 @@ public abstract class Parts {
         this.base = base;
         this.active = true;
         this.damageState = DamageState.FULL;
-        this.currentLife = life;
         this.workers = workers;
         this.partState = PartState.NORMAL;
         this.fire = null;
         this.poison = null;
     }
+
+
+    public abstract T getValueFromFile(String path);
 
     /**
      * called every Calculation (frame or every X frame for good framerate)
@@ -85,6 +86,10 @@ public abstract class Parts {
 
 
     }
+
+    public abstract void draw();
+
+    public abstract void setLevel(int level);
 
     /**
      * manage effect
@@ -220,6 +225,7 @@ public abstract class Parts {
 
     public void setMaxLife(float maxLife) {
         this.maxLife = maxLife;
+        this.currentLife = maxLife;
     }
 
     public int getAmmoCost() {
