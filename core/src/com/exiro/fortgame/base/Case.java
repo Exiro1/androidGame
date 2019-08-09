@@ -10,4 +10,10 @@ public class Case {
     PartType type;
 
 
+    public Case(int x, int y, Parts part, PartType type) {
+        this.x = x;
+        this.y = y;
+        this.part = part;
+        this.type = type;
+    }
 }

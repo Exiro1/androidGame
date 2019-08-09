@@ -1,10 +1,12 @@
 package com.exiro.fortgame.communication;
 
 import com.badlogic.gdx.Gdx;
+import com.exiro.fortgame.base.Base;
 import com.exiro.fortgame.fortGame;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -15,7 +17,7 @@ import java.nio.ByteBuffer;
 public class ClientConnection implements Runnable {
 
 
-    final String host = "XX.XXX.XXX.XX";
+    final String host = "86.248.196.81";
     final int portNumber = 6260;
 
     public ClientConnection() {
@@ -38,8 +40,10 @@ public class ClientConnection implements Runnable {
             DataInputStream is = new DataInputStream(socket.getInputStream());
 
             String responseLine;
-            String message = "Test de connection server";
+            String message = fortGame.USERUID + ";Exiro";
             write(message, os);
+            String str = readInput(is);
+            Base.getBaseFromData(str);
 
             os.close();
             is.close();
@@ -64,6 +68,32 @@ public class ClientConnection implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public String readInput(InputStream inputStream) {
+
+        byte[] messageByte = new byte[65532];
+        boolean end = false;
+        String dataString = "";
+
+        try {
+            DataInputStream in = new DataInputStream(inputStream);
+            int bytesRead = 0;
+            messageByte[0] = in.readByte();
+            messageByte[1] = in.readByte();
+            ByteBuffer byteBuffer = ByteBuffer.wrap(messageByte, 0, 2);
+
+            int bytesToRead = byteBuffer.getShort();
+
+
+            in.readFully(messageByte, 0, bytesToRead);
+            dataString = new String(messageByte, 0, bytesToRead);
+            Gdx.app.log(fortGame.TAG, "read : " + dataString);
+            return dataString;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     @Override

@@ -29,10 +29,9 @@ public abstract class Gun<T extends Gun<T>> extends Parts<T> {
     Texture containerTex;
     Texture gun;
 
-    public Gun(String conatainerTexPath, Sprite defaultSprite, Sprite actionSprite, Sprite damagedSprite, Sprite damagedActionSprite, int ammoCost, int energyCost, int maxPeople, int level, int xlength, int ylength, int x, int y, Parts upperPart, Parts exposedSidePart, Base base, List<Worker> workers, int reloadingTime, boolean fireAmmo, boolean flashAmmo, boolean poisonAmmo, boolean deathAmmo, AmmoType currentAmmoType, String gunTexPath) {
-        super(defaultSprite, actionSprite, damagedSprite, damagedActionSprite, PartType.GUN, ammoCost, energyCost, maxPeople, level, xlength, ylength, x, y, 0, 0, upperPart, exposedSidePart, PartInteractionState.NONE, base, workers);
+    public Gun(String conatainerTexPath, Sprite defaultSprite, Sprite actionSprite, Sprite damagedSprite, Sprite damagedActionSprite, int ammoCost, int energyCost, int level, int xlength, int ylength, int x, int y, Parts upperPart, Parts exposedSidePart, Base base, List<Worker> workers, boolean fireAmmo, boolean flashAmmo, boolean poisonAmmo, boolean deathAmmo, AmmoType currentAmmoType, String gunTexPath) {
+        super(defaultSprite, actionSprite, damagedSprite, damagedActionSprite, PartType.GUN, ammoCost, energyCost, level, xlength, ylength, x, y, 0, 0, upperPart, exposedSidePart, PartInteractionState.NONE, base, workers);
         this.autoFire = true;
-        this.reloadingTime = reloadingTime;
         this.timeLeft = (double) reloadingTime;
         this.target = null;
         this.fireAmmo = fireAmmo;

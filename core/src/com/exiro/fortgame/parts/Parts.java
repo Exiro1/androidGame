@@ -33,7 +33,7 @@ public abstract class Parts<T extends Parts<T>> {
     private Fire fire;
     private Poison poison;
 
-    public Parts(Sprite defaultSprite, Sprite actionSprite, Sprite damagedSprite, Sprite damagedActionSprite, PartType type, int ammoCost, int energyCost, int maxPeople, int level, int xlength, int ylength, int x, int y, int currentAmmoModifier, int currentEnergyModifier, Parts upperPart, Parts exposedSidePart, PartInteractionState interactionState, Base base, List<Worker> workers) {
+    public Parts(Sprite defaultSprite, Sprite actionSprite, Sprite damagedSprite, Sprite damagedActionSprite, PartType type, int ammoCost, int energyCost, int level, int xlength, int ylength, int x, int y, int currentAmmoModifier, int currentEnergyModifier, Parts upperPart, Parts exposedSidePart, PartInteractionState interactionState, Base base, List<Worker> workers) {
         this.defaultSprite = defaultSprite;
         this.actionSprite = actionSprite;
         this.damagedSprite = damagedSprite;
@@ -41,7 +41,6 @@ public abstract class Parts<T extends Parts<T>> {
         this.type = type;
         this.ammoCost = ammoCost;
         this.energyCost = energyCost;
-        this.maxPeople = maxPeople;
         this.level = level;
         Xlength = xlength;
         Ylength = ylength;
@@ -263,5 +262,21 @@ public abstract class Parts<T extends Parts<T>> {
 
     public Base getBase() {
         return base;
+    }
+
+    public int getMaxPeople() {
+        return maxPeople;
+    }
+
+    public void setMaxPeople(int maxPeople) {
+        this.maxPeople = maxPeople;
+    }
+
+    public PartType getType() {
+        return type;
+    }
+
+    public void setType(PartType type) {
+        this.type = type;
     }
 }
