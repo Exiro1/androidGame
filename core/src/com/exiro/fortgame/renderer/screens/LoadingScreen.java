@@ -1,4 +1,4 @@
-package com.exiro.fortgame.renderer;
+package com.exiro.fortgame.renderer.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.exiro.fortgame.communication.ClientConnection;
 import com.exiro.fortgame.fortGame;
 
 public class LoadingScreen implements Screen {
@@ -16,6 +17,12 @@ public class LoadingScreen implements Screen {
     Texture loadingTex;
     Sprite loadImage;
 
+    boolean connectionStarted = false;
+
+    @Override
+    public void show() {
+
+    }
     public LoadingScreen(final fortGame game) {
         this.game = game;
         camera = new OrthographicCamera();
@@ -31,10 +38,8 @@ public class LoadingScreen implements Screen {
 
         camera.position.set(camera.viewportWidth / 2f, camera.viewportHeight / 2f, 0);
         camera.update();
-    }
 
-    @Override
-    public void show() {
+
 
     }
 
@@ -44,8 +49,17 @@ public class LoadingScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         if (game.assetManager.update()) {
-            this.dispose();
-            game.setScreen(new MenuScreen(game));
+            if (fortGame.SIGNIN) {
+                if (!connectionStarted) {
+                    connectionStarted = true;
+                    ClientConnection clientConnection = new ClientConnection(game.player);
+                    new Thread(clientConnection).start();
+                }
+                if (fortGame.CONNECTED) {
+                    this.dispose();
+                    game.setScreen(new MenuScreen(game));
+                }
+            }
         }
 
         camera.update();

@@ -1,6 +1,12 @@
 package com.exiro.fortgame.parts;
 
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.exiro.fortgame.base.Base;
+import com.exiro.fortgame.fortGame;
+import com.exiro.fortgame.utils.Bullet;
 import com.exiro.fortgame.utils.DamageState;
 import com.exiro.fortgame.utils.Fire;
 import com.exiro.fortgame.utils.PartInteractionState;
@@ -8,16 +14,20 @@ import com.exiro.fortgame.utils.PartState;
 import com.exiro.fortgame.utils.PartType;
 import com.exiro.fortgame.utils.Poison;
 import com.exiro.fortgame.utils.Sprite;
+import com.exiro.fortgame.utils.Team;
 import com.exiro.fortgame.utils.Worker;
 
 import java.util.List;
 
-public abstract class Parts<T extends Parts<T>> {
+public abstract class Parts<T extends Parts<T>> extends Actor {
 
     private final int DESTROY_LIFE_FACTOR = 2;
     private final int REPAIR_LIFE_FACTOR = 3;
 
+
+    private int ID;
     private Sprite defaultSprite, actionSprite, damagedSprite, damagedActionSprite;
+    private com.badlogic.gdx.graphics.g2d.Sprite actualSprite;
     private PartType type;
     private double maxLife, currentLife; //life get negative up to -maxLife (when destroy currentLife = -maxLife) when get to 0 -> get repaired
     private int maxPeople, level, Xlength, Ylength, x, y;
@@ -33,7 +43,7 @@ public abstract class Parts<T extends Parts<T>> {
     private Fire fire;
     private Poison poison;
 
-    public Parts(Sprite defaultSprite, Sprite actionSprite, Sprite damagedSprite, Sprite damagedActionSprite, PartType type, int ammoCost, int energyCost, int level, int xlength, int ylength, int x, int y, int currentAmmoModifier, int currentEnergyModifier, Parts upperPart, Parts exposedSidePart, PartInteractionState interactionState, Base base, List<Worker> workers) {
+    public Parts(Sprite defaultSprite, Sprite actionSprite, Sprite damagedSprite, Sprite damagedActionSprite, PartType type, int ammoCost, int energyCost, int level, int xlength, int ylength, int x, int y, int currentAmmoModifier, int currentEnergyModifier, Parts upperPart, Parts exposedSidePart, PartInteractionState interactionState, Base base, List<Worker> workers, String texPath) {
         this.defaultSprite = defaultSprite;
         this.actionSprite = actionSprite;
         this.damagedSprite = damagedSprite;
@@ -58,6 +68,13 @@ public abstract class Parts<T extends Parts<T>> {
         this.partState = PartState.NORMAL;
         this.fire = null;
         this.poison = null;
+
+        actualSprite = new com.badlogic.gdx.graphics.g2d.Sprite(fortGame.getInstance().assetManager.get(texPath, Texture.class));
+        if (base.getTeam() == Team.ENEMY)
+            actualSprite.flip(true, false);
+        spritePos(x, y);
+        setTouchable(Touchable.enabled);
+
     }
 
 
@@ -82,11 +99,48 @@ public abstract class Parts<T extends Parts<T>> {
                 fullCase(delta);
                 break;
         }
+    }
 
+    public void addListenerGame() {
+        this.setBounds(0, 0, 20, 20);
+
+        this.setPosition(actualSprite.getX(), actualSprite.getY());
+       /* addListener(new ClickListener() {
+
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                System.out.println("clicked part ID : "+getID() + " type "+ this.getClass().getName() + " X :"+x + " Y :"+y + " X2 :"+event.getStageX() + " Y2 :"+event.getStageY() );
+                return super.touchDown(event, x, y, pointer, button);
+            }
+
+        });*/
+    }
+
+
+    public void spritePos(float x, float y) {
+        this.x = (int) x;
+        this.y = (int) y;
+
+        if (base.getTeam() == Team.ALLY)
+            actualSprite.setPosition(x * 20 + 20, y * 20 + 20);
+        if (base.getTeam() == Team.ENEMY)
+            actualSprite.setPosition(getBase().getxCoord() + 120 - x * 20, y * 20 + 20);
+
+        actualSprite.setSize(20, 20);
+        setBounds(actualSprite.getX(), actualSprite.getY(), 20, 20);
+    }
+
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+    }
+
+    @Override
+    public void draw(Batch batch, float parentAlpha) {
+        actualSprite.draw(batch);
 
     }
 
-    public abstract void draw();
 
     public abstract void setLevel(int level);
 
@@ -129,6 +183,9 @@ public abstract class Parts<T extends Parts<T>> {
         }
     }
 
+    public void attacked(Bullet b) {
+        damage(b.getDamage());
+    }
 
     private void destroyCase(double delta) {
         for (Worker w : this.workers) {
@@ -188,9 +245,7 @@ public abstract class Parts<T extends Parts<T>> {
      * called when destroy
      */
     private void destroy() {
-        this.active = false;
-        this.base.addAmmoCurrentSupply(this.getAmmoCost() - this.currentAmmoModifier);
-        this.base.addEnergyCurrentSupply(this.getEnergyCost() - this.currentEnergyModifier);
+        desactivate();
         this.damageState = DamageState.DESTROY;
         this.currentLife = -(this.maxLife / DESTROY_LIFE_FACTOR);
     }
@@ -199,9 +254,7 @@ public abstract class Parts<T extends Parts<T>> {
      * called when get repaired when was destroy
      */
     private void repaired() { //active
-        this.active = true;
-        this.base.addAmmoCurrentSupply(-this.getAmmoCost() + this.currentAmmoModifier);
-        this.base.addEnergyCurrentSupply(-this.getEnergyCost() + this.currentEnergyModifier);
+        activate();
         this.damageState = DamageState.DAMAGED;
         this.setCurrentLife(this.maxLife / REPAIR_LIFE_FACTOR);
     }
@@ -214,9 +267,17 @@ public abstract class Parts<T extends Parts<T>> {
         this.damageState = DamageState.FULL;
     }
 
-    public abstract void desactivate();
+    public void desactivate() {
+        this.active = false;
+        this.base.addAmmoCurrentSupply(this.getAmmoCost() - this.currentAmmoModifier);
+        this.base.addEnergyCurrentSupply(this.getEnergyCost() - this.currentEnergyModifier);
+    }
 
-    public abstract void activate();
+    public void activate() {
+        this.active = true;
+        this.base.addAmmoCurrentSupply(-this.getAmmoCost() + this.currentAmmoModifier);
+        this.base.addEnergyCurrentSupply(-this.getEnergyCost() + this.currentEnergyModifier);
+    }
 
     public double getMaxLife() {
         return maxLife;
@@ -225,6 +286,14 @@ public abstract class Parts<T extends Parts<T>> {
     public void setMaxLife(float maxLife) {
         this.maxLife = maxLife;
         this.currentLife = maxLife;
+    }
+
+    public int getID() {
+        return ID;
+    }
+
+    public void setID(int ID) {
+        this.ID = ID;
     }
 
     public int getAmmoCost() {
@@ -279,4 +348,180 @@ public abstract class Parts<T extends Parts<T>> {
     public void setType(PartType type) {
         this.type = type;
     }
+
+
+    public Sprite getDefaultSprite() {
+        return defaultSprite;
+    }
+
+    public void setDefaultSprite(Sprite defaultSprite) {
+        this.defaultSprite = defaultSprite;
+    }
+
+    public Sprite getActionSprite() {
+        return actionSprite;
+    }
+
+    public void setActionSprite(Sprite actionSprite) {
+        this.actionSprite = actionSprite;
+    }
+
+    public Sprite getDamagedSprite() {
+        return damagedSprite;
+    }
+
+    public void setDamagedSprite(Sprite damagedSprite) {
+        this.damagedSprite = damagedSprite;
+    }
+
+    public Sprite getDamagedActionSprite() {
+        return damagedActionSprite;
+    }
+
+    public void setDamagedActionSprite(Sprite damagedActionSprite) {
+        this.damagedActionSprite = damagedActionSprite;
+    }
+
+    public void setMaxLife(double maxLife) {
+        this.maxLife = maxLife;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public int getXlength() {
+        return Xlength;
+    }
+
+    public void setXlength(int xlength) {
+        Xlength = xlength;
+    }
+
+    public int getYlength() {
+        return Ylength;
+    }
+
+    public void setYlength(int ylength) {
+        Ylength = ylength;
+    }
+
+    public int getXpart() {
+        return x;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public int getYpart() {
+        return y;
+    }
+
+    public void setY(int y) {
+        this.y = y;
+    }
+
+    public List<Worker> getWorkers() {
+        return workers;
+    }
+
+    public void setWorkers(List<Worker> workers) {
+        this.workers = workers;
+    }
+
+    public void setAmmoCost(int ammoCost) {
+        this.ammoCost = ammoCost;
+    }
+
+    public void setEnergyCost(int energyCost) {
+        this.energyCost = energyCost;
+    }
+
+    public int getCurrentAmmoModifier() {
+        return currentAmmoModifier;
+    }
+
+    public void setCurrentAmmoModifier(int currentAmmoModifier) {
+        this.currentAmmoModifier = currentAmmoModifier;
+    }
+
+    public int getCurrentEnergyModifier() {
+        return currentEnergyModifier;
+    }
+
+    public void setCurrentEnergyModifier(int currentEnergyModifier) {
+        this.currentEnergyModifier = currentEnergyModifier;
+    }
+
+    public Parts getUpperPart() {
+        return upperPart;
+    }
+
+    public void setUpperPart(Parts upperPart) {
+        this.upperPart = upperPart;
+    }
+
+    public Parts getExposedSidePart() {
+        return exposedSidePart;
+    }
+
+    public void setExposedSidePart(Parts exposedSidePart) {
+        this.exposedSidePart = exposedSidePart;
+    }
+
+    public Parts getOtherSidePart() {
+        return otherSidePart;
+    }
+
+    public void setOtherSidePart(Parts otherSidePart) {
+        this.otherSidePart = otherSidePart;
+    }
+
+    public Parts getBottomPart() {
+        return bottomPart;
+    }
+
+    public void setBottomPart(Parts bottomPart) {
+        this.bottomPart = bottomPart;
+    }
+
+    public PartInteractionState getInteractionState() {
+        return interactionState;
+    }
+
+    public void setInteractionState(PartInteractionState interactionState) {
+        this.interactionState = interactionState;
+    }
+
+    public void setBase(Base base) {
+        this.base = base;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public DamageState getDamageState() {
+        return damageState;
+    }
+
+    public void setDamageState(DamageState damageState) {
+        this.damageState = damageState;
+    }
+
+    public Fire getFire() {
+        return fire;
+    }
+
+    public Poison getPoison() {
+        return poison;
+    }
+
+
+
 }

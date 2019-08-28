@@ -14,7 +14,7 @@ public class testGun extends Gun<testGun> {
 
 
     public testGun(Base base, List<Worker> workers, int level) {
-        super("mediumCanonCase.png", null, null, null, null, 4, 3, 1, level, 1, 1, 0, null, null, base, workers, false, true, false, false, AmmoType.NORMAL, "testGun.png");
+        super("mediumCanonCase.png", null, null, null, null, 4, 3, 1, level, 1, 0, 0, null, null, base, workers, false, true, false, false, AmmoType.NORMAL, "testGun.png");
         setLevel(level);
     }
 
@@ -24,10 +24,7 @@ public class testGun extends Gun<testGun> {
         return null;
     }
 
-    @Override
-    public void draw() {
 
-    }
 
     /**
      * recover data from dataFile
